@@ -61,6 +61,8 @@ int main(int argc, char *argv[]){
         if(!fork()){ // We are the child process
             close(sockfd);
 
+            printf("%i\n", get_message_size(new_fd));
+
             bytes_recieved = recv(new_fd, buffer, sizeof(buffer), 0);
 
             if(bytes_recieved < 0){

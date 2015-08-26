@@ -7,7 +7,29 @@
 #include <string.h>
 #include <unistd.h>
 
-void setup_addrinfo(struct addrinfo **servinfo, char *hostname, char *port, int flags){
+/**
+* Cinnotify uses 32 bits at the start of a message to indicate the message size.
+* This returns that value.
+*/
+uint32_t get_message_size(int connected_socket){
+    int bytes_to_recv = 4;
+    unsigned char buff[bytes_to_recv];
+
+    int bytes_recieved = 0;
+    bytes_recieved = recv(connected_socket, buff, bytes_to_recv, 0);
+    bytes_to_recv -= bytes_recieved;
+    while(bytes_to_recv > 0){
+        bytes_recieved = recv(connected_socket, buff + (4 - bytes_to_recv), bytes_to_recv, 0);
+        bytes_to_recv -= bytes_recieved;
+    }
+
+    return  (uint32_t) buff[0] << 24 |
+            (uint32_t) buff[1] << 16 |
+            (uint32_t) buff[2] << 8  |
+            (uint32_t) buff[3];
+}
+
+static void setup_addrinfo(struct addrinfo **servinfo, char *hostname, char *port, int flags){
     struct addrinfo hints;
     int rv;
 
