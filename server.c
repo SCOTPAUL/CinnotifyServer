@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -7,17 +8,20 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <libnotify/notify.h>
+#include <regex.h>
 #include "networking.h"
+#include "message_parser.h"
+#include "notify.h"
 
 #define PORT "6525"
 #define BACKLOG 15
 #define BUFFER_SIZE 1000
 
+void print_usage_and_quit(char *application_name);
+
 void sigchld_handler(int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
 }
-
-void print_usage_and_quit(char *application_name);
 
 int main(int argc, char *argv[]){
     int sockfd, new_fd;
@@ -25,9 +29,6 @@ int main(int argc, char *argv[]){
     struct sockaddr_storage their_addr; // Address information of client
     socklen_t sin_size;
     char s[INET_ADDRSTRLEN];
-    char buffer[BUFFER_SIZE];
-    ssize_t bytes_recieved;
-    int i;
 
     sockfd = get_listener_socket_file_descriptor(PORT);
 
@@ -43,9 +44,10 @@ int main(int argc, char *argv[]){
         perror("sigaction");
         exit(1);
     }
-
     printf("%s\n", "server: waiting for connections");
 
+    regex_t regex;
+    get_message_regex(&regex);
     notify_init(argv[0]);
     while(1){
         sin_size = sizeof(their_addr);
@@ -58,30 +60,38 @@ int main(int argc, char *argv[]){
         inet_ntop(their_addr.ss_family, &(((struct sockaddr_in *)&their_addr)->sin_addr), s, sizeof(s));
         printf("server: got connection from %s\n", s);
 
+
         if(!fork()){ // We are the child process
             close(sockfd);
+            char *msg_body = get_message_body(new_fd);
 
-            printf("%i\n", get_message_size(new_fd));
+            message *messages = match_message_body(msg_body, &regex);
+            message *ptr = messages;
 
-            bytes_recieved = recv(new_fd, buffer, sizeof(buffer), 0);
-
-            if(bytes_recieved < 0){
-                perror("recv");
-                return 1;
+            char *title = NULL, *body = NULL;
+            for(ptr = ptr->next; ptr != NULL; ptr = ptr->next){
+                if(strcmp(ptr->header, "title") == 0) title = ptr->content;
+                else if(strcmp(ptr->header, "desc") == 0) body = ptr->content;
             }
 
-            while(bytes_recieved > 0){
-                for(i = 0; i < bytes_recieved; ++i){
-                    putchar(buffer[i]);
+            if(title != NULL){
+                if(body != NULL){
+                    notify(title, body);
                 }
-
-                bytes_recieved = recv(new_fd, buffer, sizeof(buffer), 0);
+                else{
+                    notify(title, "");
+                }
             }
+
+            message_destroy(messages);
+            free(msg_body);
+
             close(new_fd);
             exit(0);
         }
     }
     notify_uninit();
+    regfree(&regex);
     close(new_fd);
     return 0;
 

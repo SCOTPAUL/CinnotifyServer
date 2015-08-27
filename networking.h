@@ -12,13 +12,6 @@
  */
 int get_listener_socket_file_descriptor(char *port);
 
-/**
-* Finds the size of the body of the Cinnotify message
-*
-* \param connected_socket Listening server socket with active connection
-*
-* \returns Size of the main body of the message
-*/
-uint32_t get_message_size(int connected_socket);
+char * get_message_body(int connected_socket);
 
 #endif
