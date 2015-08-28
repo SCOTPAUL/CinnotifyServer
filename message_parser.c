@@ -4,13 +4,15 @@
 #include <stdlib.h>
 #include "message_parser.h"
 
-message * message_create(char *header, char *content){
+message * message_create(message *prev, char *header, char *content){
     message *msg = malloc(sizeof(message));
     char *headcpy = strdup(header);
     char *contcpy = strdup(content);
 
     msg->header = headcpy;
     msg->content = contcpy;
+
+    if(prev != NULL) prev->next = msg;
 
     return msg;
 }
@@ -36,12 +38,12 @@ void get_message_regex(regex_t *reg_ptr){
 message * match_message_body(char *msg, regex_t *regex){
     int reti;
     regmatch_t matches[3];
-    message *ptr = message_create("", "");
+
+    message *ptr = NULL;
     message *front = ptr;
 
     char *str = msg;
     int last_end = 0;
-
     while(!(reti = regexec(regex, str, 3, matches, 0))){
         char header[matches[1].rm_eo - matches[1].rm_so + 1];
         char content[matches[2].rm_eo - matches[2].rm_so + 1];
@@ -51,8 +53,8 @@ message * match_message_body(char *msg, regex_t *regex){
         header[matches[1].rm_eo - matches[1].rm_so] = '\0';
         content[matches[2].rm_eo - matches[2].rm_so] = '\0';
 
-        ptr->next = message_create(header, content);
-        ptr = ptr->next;
+        ptr = message_create(ptr, header, content);
+        if(front == NULL) front = ptr;
 
         last_end = matches[0].rm_eo;
         str = &str[last_end];

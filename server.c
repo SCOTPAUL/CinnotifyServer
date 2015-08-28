@@ -66,21 +66,16 @@ int main(int argc, char *argv[]){
             char *msg_body = get_message_body(new_fd);
 
             message *messages = match_message_body(msg_body, &regex);
-            message *ptr = messages;
 
+            message *ptr;
             char *title = NULL, *body = NULL;
-            for(ptr = ptr->next; ptr != NULL; ptr = ptr->next){
+            for(ptr = messages; ptr != NULL; ptr = ptr->next){
                 if(strcmp(ptr->header, "title") == 0) title = ptr->content;
                 else if(strcmp(ptr->header, "desc") == 0) body = ptr->content;
             }
 
-            if(title != NULL){
-                if(body != NULL){
-                    notify(title, body);
-                }
-                else{
-                    notify(title, "");
-                }
+            if(title != NULL || body != NULL){
+                notify(title, body);
             }
 
             message_destroy(messages);

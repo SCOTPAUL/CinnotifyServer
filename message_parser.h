@@ -7,7 +7,7 @@ typedef struct message {
     struct message *next;
 } message;
 
-message * message_create(char *header, char *content);
+message * message_create(message *prev, char *header, char *content);
 void message_destroy(message *msg);
 
 void get_message_regex(regex_t *reg_ptr);
