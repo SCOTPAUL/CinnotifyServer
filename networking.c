@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-char * recv_all(int connected_socket , uint32_t size){
+static char * recv_all(int connected_socket , uint32_t size){
     uint32_t bytes_to_recv = size;
     uint32_t bytes_recieved = 0;
     char *buff = malloc(bytes_to_recv);
@@ -21,9 +21,9 @@ char * recv_all(int connected_socket , uint32_t size){
 }
 
 /**
-* Cinnotify uses 32 bits at the start of a message to indicate the message size.
-* This returns that value.
-*/
+ * Cinnotify uses 32 bits at the start of a message to indicate the message size.
+ * This returns that value.
+ */
 static uint32_t get_message_size(int connected_socket){
     char *buff = recv_all(connected_socket, 4);
 

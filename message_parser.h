@@ -7,7 +7,15 @@ typedef struct message {
     struct message *next;
 } message;
 
+/**
+ * Creates a new message, and allocates memory for the message's header and content.
+ */
 message * message_create(message *prev, char *header, char *content);
+
+/**
+ * Frees the memory used for the message, the header, content and so on if
+ * msg->next points to another message.
+ */
 void message_destroy(message *msg);
 
 void get_message_regex(regex_t *reg_ptr);
