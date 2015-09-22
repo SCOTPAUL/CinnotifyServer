@@ -15,10 +15,28 @@ cd CinnotifyServer/
 make
 ```
 
-### Run
+### Usage
+
+#### Default
 
 ```bash
 ./cinnotify-server
+```
+
+#### Silent
+
+Redirects `stdout` and `stderr` to `/dev/null` to allow running silently in the background.
+
+```bash
+./cinnotify-server -s
+```
+
+#### Custom Port
+
+If the Cinnotify app is using a port other than 6525 (the default), the listening port can be set to a custom value.
+
+```bash
+./cinnotify-server -p [PORT]
 ```
 
 ## TODO

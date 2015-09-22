@@ -9,11 +9,11 @@
 #include <unistd.h>
 #include <libnotify/notify.h>
 #include <regex.h>
+#include <ctype.h>
 #include "networking.h"
 #include "message_parser.h"
 #include "notify.h"
 
-#define PORT "6525"
 #define BACKLOG 15
 #define BUFFER_SIZE 1000
 
@@ -29,8 +29,30 @@ int main(int argc, char *argv[]){
     struct sockaddr_storage their_addr; // Address information of client
     socklen_t sin_size;
     char s[INET_ADDRSTRLEN];
+    char *port = "6525";
 
-    sockfd = get_listener_socket_file_descriptor(PORT);
+    int option = 0;
+    while((option = getopt(argc, argv,"sp:")) != -1){
+        switch(option){
+            case 's':
+                freopen("/dev/null", "w", stdout);
+                freopen("/dev/null", "w", stderr);
+                break;
+            case 'p':
+                // TODO: free this string!
+                port = strdup(optarg);
+                
+                char *ptr = port;
+                while(*ptr){
+                    if(!isdigit(*ptr)) print_usage_and_quit(argv[0]);
+                    ++ptr;
+                }
+                break;
+            default: print_usage_and_quit(argv[0]);
+        }
+    }
+
+    sockfd = get_listener_socket_file_descriptor(port);
 
     if(listen(sockfd, BACKLOG) == -1){
         perror("listen");
@@ -93,6 +115,6 @@ int main(int argc, char *argv[]){
 }
 
 void print_usage_and_quit(char *application_name){
-    printf("Usage: %s\n", application_name);
+    printf("Usage: %s [-s] [-p port]\n", application_name);
     exit(1);
 }

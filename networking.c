@@ -20,18 +20,26 @@ static char * recv_all(int connected_socket , uint32_t size){
     return buff;
 }
 
+static uint32_t char_array_to_uint(uint32_t num_bytes, char *buffer){
+    uint32_t ret = 0;
+
+    uint32_t i;
+    for (i = 0; i < num_bytes; ++i) {
+        ret <<= 8;
+        ret |= (uint32_t) buffer[i];
+    }
+
+    return ret;
+}
+
 /**
- * Cinnotify uses 32 bits at the start of a message to indicate the message size.
+ * Cinnotify uses 4 bytes at the start of a message to indicate the message size.
  * This returns that value.
  */
 static uint32_t get_message_size(int connected_socket){
     char *buff = recv_all(connected_socket, 4);
 
-    uint32_t ret =
-            (uint32_t) buff[0] << 24 |
-            (uint32_t) buff[1] << 16 |
-            (uint32_t) buff[2] << 8  |
-            (uint32_t) buff[3];
+    uint32_t ret = char_array_to_uint(4, buff);
 
     free(buff);
     return ret;
@@ -84,7 +92,6 @@ int get_listener_socket_file_descriptor(char *port){
             perror("setsockopt");
             exit(1);
         }
-
 
         if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1){
             close(sockfd);
