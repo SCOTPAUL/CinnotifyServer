@@ -43,4 +43,4 @@ If the Cinnotify app is using a port other than 6525 (the default), the listenin
 - Implement end to end encryption to prevent interception of potentially private notifications over public networks.
 - Receive app icon images and display these to tell the user which app the notification came from.
 - Improve notification parser to allow special characters in notifications.
-- Allow the user to manually set the port number with a flag.
+- ~~Allow the user to manually set the port number with a flag.~~

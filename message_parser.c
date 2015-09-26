@@ -29,7 +29,7 @@ void message_destroy(message *msg){
 }
 
 void get_message_regex(regex_t *reg_ptr){
-    int reti = regcomp(reg_ptr, "[^\\\\]?\\[([[:alnum:]]+):([[:alnum:] .\\/?:!]+)\\]", REG_EXTENDED|REG_ICASE);
+    int reti = regcomp(reg_ptr, "\\[([[:alnum:]]+):([^]]*)\\]", REG_EXTENDED|REG_ICASE);
     if(reti){
         fprintf(stderr, "%s\n", "Couldn't compile regex");
     }
