@@ -1,22 +1,21 @@
 CC=gcc
 CFLAGS= -c -Wall
+GLIB_TARGETS = server.o notify.o
+TARGETS = $(GLIB_TARGETS) networking.o message_parser.o
 
 all: cinnotify-server
 
-cinnotify-server: notify.o server.o networking.o message_parser.o
-	$(CC) notify.o server.o networking.o message_parser.o `pkg-config --cflags --libs libnotify` -o cinnotify-server
-
-notify.o: notify.c
-	$(CC) $(CFLAGS) `pkg-config --cflags --libs glib-2.0` notify.c
+cinnotify-server: $(TARGETS)
+	$(CC) $^  `pkg-config --cflags --libs glib-2.0 libnotify` -o $@
 
 server.o: server.c
-	$(CC) $(CFLAGS) `pkg-config --cflags --libs glib-2.0` server.c
+notify.o: notify.c
 
-networking.o: networking.c
-	$(CC) $(CFLAGS) networking.c
+$(GLIB_TARGETS):
+	$(CC) $(CFLAGS) `pkg-config --cflags glib-2.0` $<
 
-message_parser.o: message_parser.c
-	$(CC) $(CFLAGS) message_parser.c
+%.o: %.c
+	$(CC) $(CFLAGS) $<
 
 .PHONY: clean
 clean:
