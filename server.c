@@ -10,6 +10,8 @@
 #include <libnotify/notify.h>
 #include <regex.h>
 #include <ctype.h>
+#include <ifaddrs.h>
+#include <netdb.h>
 #include "networking.h"
 #include "message_parser.h"
 #include "notify.h"
@@ -23,12 +25,38 @@ void sigchld_handler(int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
+int get_ip(char *buf, size_t buf_len){
+    struct ifaddrs *addrs, *temp;
+    int status = -1;
+    
+    getifaddrs(&addrs);
+    temp = addrs;
+    
+    while(temp){
+        if(!temp->ifa_addr) continue;
+        
+        if(strcmp(temp->ifa_name, "lo") != 0 && temp->ifa_addr->sa_family == AF_INET){
+            status = getnameinfo(temp->ifa_addr, sizeof(struct sockaddr), buf, buf_len, NULL, 0, NI_NUMERICHOST);
+            
+            
+            break;
+        
+        }
+
+        temp = temp->ifa_next;
+    }
+
+    freeifaddrs(addrs);
+    return status;
+}
+
 int main(int argc, char *argv[]){
     int sockfd, new_fd;
     struct sigaction sa;
     struct sockaddr_storage their_addr; // Address information of client
     socklen_t sin_size;
     char s[INET_ADDRSTRLEN];
+    char ip_buf[BUFFER_SIZE];
     char *port = "6525";
 
     int option = 0;
@@ -50,6 +78,14 @@ int main(int argc, char *argv[]){
                 break;
             default: print_usage_and_quit(argv[0]);
         }
+    }
+
+    if(get_ip(ip_buf, BUFFER_SIZE) == 0){
+        printf("This machine has address: %s\n", ip_buf);
+    }
+    else {
+        printf("%s\n", "Getting IP address failed");
+        exit(1);
     }
 
     sockfd = get_listener_socket_file_descriptor(port);
