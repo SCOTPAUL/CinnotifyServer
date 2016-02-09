@@ -12,27 +12,31 @@ git clone https://github.com/kbranigan/cJSON.git
 
 Alternatively, cJSON can be installed from elsewhere.
 
-### Compile
+### Compile and install
 
 ```bash
 cd CinnotifyServer/
 make
+sudo make install
 ```
+
+### Running on startup
+Edit `/etc/rc.local`, adding `cinnotify-server -s &` before `exit 0`.
 
 ### Usage
 
 #### Default
 
 ```bash
-./cinnotify-server
+cinnotify-server
 ```
 
 #### Silent
 
-Redirects `stdout` and `stderr` to `/dev/null` to allow running silently in the background.
+Redirects `stderr` and `stdout` to allow running silently in the background.
 
 ```bash
-./cinnotify-server -s
+cinnotify-server -s
 ```
 
 #### Custom Port
@@ -40,7 +44,7 @@ Redirects `stdout` and `stderr` to `/dev/null` to allow running silently in the 
 If the Cinnotify app is using a port other than 6525 (the default), the listening port can be set to a custom value.
 
 ```bash
-./cinnotify-server -p [PORT]
+cinnotify-server -p [PORT]
 ```
 
 ## TODO

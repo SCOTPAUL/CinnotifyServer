@@ -1,9 +1,17 @@
 CC=gcc
-CFLAGS= -c -Wall -Werror -Wextra
-GLIB_TARGETS = server.o notify.o cJSON.o
+CFLAGS=-c -Wall -Werror -Wextra
+GLIB_TARGETS =server.o notify.o cJSON.o
 TARGETS = $(GLIB_TARGETS) networking.o message_parser.o
+INSTALL_LOCATION ?=/usr/local/bin
+
 
 all: cinnotify-server
+install: cinnotify-server
+	mkdir -p $(INSTALL_LOCATION)
+	cp cinnotify-server $(INSTALL_LOCATION)
+
+uninstall:
+	rm $(INSTALL_LOCATION)/cinnotify-server
 
 cinnotify-server: $(TARGETS)
 	$(CC) $^  `pkg-config --cflags --libs gtk+-2.0 glib-2.0 libnotify` -o $@ -lm
