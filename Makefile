@@ -1,14 +1,15 @@
 CC=gcc
-CFLAGS= -c -Wall
-GLIB_TARGETS = server.o notify.o
+CFLAGS= -c -Wall -Werror -Wextra
+GLIB_TARGETS = server.o notify.o cJSON.o
 TARGETS = $(GLIB_TARGETS) networking.o message_parser.o
 
 all: cinnotify-server
 
 cinnotify-server: $(TARGETS)
-	$(CC) $^  `pkg-config --cflags --libs gtk+-2.0 glib-2.0 libnotify` -o $@
+	$(CC) $^  `pkg-config --cflags --libs gtk+-2.0 glib-2.0 libnotify` -o $@ -lm
 
 server.o: server.c
+cJSON.o: lib/cJSON/cJSON.c
 notify.o: notify.c
 
 $(GLIB_TARGETS):

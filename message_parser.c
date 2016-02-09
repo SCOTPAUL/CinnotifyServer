@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "lib/cJSON/cJSON.h"
 #include "message_parser.h"
 
 message * message_create(message *prev, char *header, char *content){
@@ -28,39 +29,33 @@ void message_destroy(message *msg){
     free(msg);
 }
 
-void get_message_regex(regex_t *reg_ptr){
-    int reti = regcomp(reg_ptr, "\\[([[:alnum:]]+):([^]]*)\\]", REG_EXTENDED|REG_ICASE);
-    if(reti){
-        fprintf(stderr, "%s\n", "Couldn't compile regex");
-    }
-}
+message * match_message_body(char *msg){
+    char *title = NULL;
+    char *content = NULL;
+    cJSON *tmp;
+    message *front = NULL;
+    message *ptr = front;
+    cJSON *root = cJSON_Parse(msg);
 
-message * match_message_body(char *msg, regex_t *regex){
-    int reti;
-    regmatch_t matches[3];
-
-    message *ptr = NULL;
-    message *front = ptr;
-
-    char *str = msg;
-    int last_end = 0;
-    while(!(reti = regexec(regex, str, 3, matches, 0))){
-        char header[matches[1].rm_eo - matches[1].rm_so + 1];
-        char content[matches[2].rm_eo - matches[2].rm_so + 1];
-        strncpy(header, str + matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
-        strncpy(content, str + matches[2].rm_so,  matches[2].rm_eo - matches[2].rm_so);
-
-        header[matches[1].rm_eo - matches[1].rm_so] = '\0';
-        content[matches[2].rm_eo - matches[2].rm_so] = '\0';
-
-        ptr = message_create(ptr, header, content);
-        if(front == NULL) front = ptr;
-
-        last_end = matches[0].rm_eo;
-        str = &str[last_end];
+    if(root){
+        tmp = cJSON_GetObjectItem(root, "title");
+        if(tmp){
+            title = tmp->valuestring;
+            ptr = message_create(front, "title", title);
+            if(!front) front = ptr;
+        }
+        
+        tmp = cJSON_GetObjectItem(root, "desc");
+        if(tmp){
+            content = tmp->valuestring;
+            ptr = message_create(front, "desc", content);
+            if(!front) front = ptr;
+        }
     }
 
     ptr->next = NULL;
-
+    
+    cJSON_Delete(root);
     return front;
 }
+

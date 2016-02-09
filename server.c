@@ -21,7 +21,7 @@
 
 void print_usage_and_quit(char *application_name);
 
-void sigchld_handler(int sig){
+void sigchld_handler(__attribute__((unused)) int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
@@ -104,8 +104,6 @@ int main(int argc, char *argv[]){
     }
     printf("%s\n", "server: waiting for connections");
 
-    regex_t regex;
-    get_message_regex(&regex);
     notify_init(argv[0]);
     while(1){
         sin_size = sizeof(their_addr);
@@ -123,7 +121,7 @@ int main(int argc, char *argv[]){
             close(sockfd);
             char *msg_body = get_message_body(new_fd);
 
-            message *messages = match_message_body(msg_body, &regex);
+            message *messages = match_message_body(msg_body);
 
             message *ptr;
             char *title = NULL, *body = NULL;
@@ -144,7 +142,6 @@ int main(int argc, char *argv[]){
         }
     }
     notify_uninit();
-    regfree(&regex);
     close(new_fd);
     return 0;
 

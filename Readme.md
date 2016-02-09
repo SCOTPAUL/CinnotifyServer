@@ -6,7 +6,11 @@ Server software for the [Cinnotify Android app](https://github.com/SCOTPAUL/Cinn
 
 ```bash
 sudo apt-get install libgtk2.0-dev libnotify-dev
+cd lib/
+git clone https://github.com/kbranigan/cJSON.git 
 ```
+
+Alternatively, cJSON can be installed from elsewhere.
 
 ### Compile
 

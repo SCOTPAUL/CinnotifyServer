@@ -18,7 +18,6 @@ message * message_create(message *prev, char *header, char *content);
  */
 void message_destroy(message *msg);
 
-void get_message_regex(regex_t *reg_ptr);
-message * match_message_body(char *msg, regex_t *regex);
+message * match_message_body(char *msg);
 
 #endif
