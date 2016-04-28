@@ -1,25 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <libnotify/notify.h>
-#include <regex.h>
-#include <ctype.h>
-#include <ifaddrs.h>
-#include <netdb.h>
-#include "networking.h"
-#include "message_parser.h"
-#include "notify.h"
+#include "main.h"
 
 #define BACKLOG 15
 #define BUFFER_SIZE 1000
 
-void print_usage_and_quit(char *application_name);
+void print_usage_and_quit();
 
 void sigchld_handler(__attribute__((unused)) int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -37,10 +21,7 @@ int get_ip(char *buf, size_t buf_len){
         
         if(strcmp(temp->ifa_name, "lo") != 0 && temp->ifa_addr->sa_family == AF_INET){
             status = getnameinfo(temp->ifa_addr, sizeof(struct sockaddr), buf, buf_len, NULL, 0, NI_NUMERICHOST);
-            
-            
             break;
-        
         }
 
         temp = temp->ifa_next;
@@ -59,8 +40,17 @@ int main(int argc, char *argv[]){
     char ip_buf[BUFFER_SIZE];
     char *port = "6525";
 
-    int option = 0;
-    while((option = getopt(argc, argv,"sp:")) != -1){
+    int option, option_index = 0;
+
+    struct option long_options[] = {
+        {"silent",  no_argument,       0, 's'},
+        {"port",    required_argument, 0, 'p'},
+        {"help",    no_argument,       0, 'h'},
+        {"version", no_argument,       0, 'v'},
+        {0,         0,                 0,  0 } // End of array
+    };
+
+    while((option = getopt_long(argc, argv,"vshp:", long_options, &option_index)) != -1){
         switch(option){
             case 's':
                 freopen("/dev/null", "w", stdout);
@@ -72,11 +62,16 @@ int main(int argc, char *argv[]){
                 
                 char *ptr = port;
                 while(*ptr){
-                    if(!isdigit(*ptr)) print_usage_and_quit(argv[0]);
+                    if(!isdigit(*ptr)) print_usage_and_quit();
                     ++ptr;
                 }
                 break;
-            default: print_usage_and_quit(argv[0]);
+            case 'v':
+                printf("%s - %s (Compiled %s %s)\n", NAME, VERSION, __DATE__, __TIME__);
+                exit(0);
+                break;
+            case 'h': // Fallthrough
+            default: print_usage_and_quit();
         }
     }
 
@@ -147,7 +142,12 @@ int main(int argc, char *argv[]){
 
 }
 
-void print_usage_and_quit(char *application_name){
-    printf("Usage: %s [-s] [-p port]\n", application_name);
+void print_usage_and_quit(){
+    printf("Usage: %s [OPTION...]\n\n"
+            "-h --help             Displays this information\n"
+            "-s --silent           Redirects outputs to /dev/null\n"
+            "-p --port <portnum>   Sets the binding port to <portnum>\n"
+            "-v --version          Print current version number\n", 
+            NAME);
     exit(1);
 }

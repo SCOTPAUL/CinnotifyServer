@@ -108,7 +108,7 @@ int get_listener_socket_file_descriptor(char *port){
     }
 
     inet_ntop(p->ai_family, &(((struct sockaddr_in *)p->ai_addr)->sin_addr), s, sizeof(s));
-    printf("listening on %s\n", s);
+    printf("listening on %s:%s\n", s, port);
 
     freeaddrinfo(servinfo);
 
