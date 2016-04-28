@@ -1,4 +1,7 @@
 # Cinnotify Server
+
+[![Build Status](https://travis-ci.org/SCOTPAUL/CinnotifyServer.svg?branch=master)](https://travis-ci.org/SCOTPAUL/CinnotifyServer)
+
 Server software for the [Cinnotify Android app](https://github.com/SCOTPAUL/Cinnotify). Mirrors notifications received on an Android device onto a Linux device with a [libnotify](https://developer.gnome.org/libnotify/) compatible notification server installed (e.g. Cinnamon/GNOME).
 
 ## Downloading
