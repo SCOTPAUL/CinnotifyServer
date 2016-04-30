@@ -116,21 +116,24 @@ int main(int argc, char *argv[]){
             close(sockfd);
             char *msg_body = get_message_body(new_fd);
 
-            message *messages = match_message_body(msg_body);
+            Message *message = match_message_body(msg_body);
 
-            message *ptr;
             char *title = NULL, *body = NULL;
-            for(ptr = messages; ptr != NULL; ptr = ptr->next){
-                if(strcmp(ptr->header, "title") == 0) title = ptr->content;
-                else if(strcmp(ptr->header, "desc") == 0) body = ptr->content;
+            char *msg_header, *msg_content;
+            while(message_field_remove(message, &msg_header, &msg_content)){ 
+                if(strcmp(msg_header, "title") == 0) title = msg_content;
+                else if(strcmp(msg_header, "desc") == 0) body = msg_content;
+                
             }
 
             if(title != NULL || body != NULL){
                 notify(title, body);
             }
 
-            message_destroy(messages);
-            free(msg_body);
+            free(msg_header);
+            free(msg_content);
+
+            message_destroy(message);
 
             close(new_fd);
             exit(0);

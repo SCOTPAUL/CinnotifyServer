@@ -5,57 +5,100 @@
 #include "lib/cJSON/cJSON.h"
 #include "message_parser.h"
 
-message * message_create(message *prev, char *header, char *content){
-    message *msg = malloc(sizeof(message));
-    char *headcpy = strdup(header);
-    char *contcpy = strdup(content);
+struct message_field {
+    char *header;
+    char *content;
+    struct message_field *next;
+};
 
-    msg->header = headcpy;
-    msg->content = contcpy;
+struct message {
+    struct message_field *top;
+};
 
-    if(prev != NULL) prev->next = msg;
+Message *message_create(void){
+    Message *msg = malloc(sizeof(Message));
+    if(!msg){
+        return NULL;
+    }
+
+    msg->top = NULL;
 
     return msg;
 }
 
-void message_destroy(message *msg){
-    free(msg->header);
-    free(msg->content);
-
-    if(msg->next != NULL){
-        message_destroy(msg->next);
+int message_field_add(Message *msg, char *header, char *content){
+    struct message_field *msg_f = malloc(sizeof(struct message_field));
+    if(!msg_f){
+        return 0;
     }
 
-    free(msg);
+    struct message_field *tmp = msg->top;
+    char *headcpy = strdup(header);
+    char *contcpy = strdup(content);
+
+    msg_f->header = headcpy;
+    msg_f->content = contcpy;
+
+    msg->top = msg_f;
+    msg_f->next = tmp;
+
+    return 1;
 }
 
-message * match_message_body(char *msg){
+int message_field_remove(Message *msg, char **header, char **content){
+    struct message_field *msg_f = msg->top;
+    if(!msg_f){
+        return 0;
+    }
+
+    *header = msg_f->header;
+    *content = msg_f->content;
+
+    msg->top = msg_f->next;
+    free(msg_f);
+
+    return 1;
+}
+
+void message_destroy(Message *msg){
+    struct message_field *next, *p = msg->top;
+    free(msg);
+
+    while(p){
+        next = p->next;
+        free(p->header);
+        free(p->content);
+        free(p);
+        p = next;
+    }
+}
+
+Message *match_message_body(char *json_msg){
     char *title = NULL;
     char *content = NULL;
     cJSON *tmp;
-    message *front = NULL;
-    message *ptr = front;
-    cJSON *root = cJSON_Parse(msg);
+    Message *msg = message_create();
+    if(!msg){
+        return NULL;
+    }
+
+    cJSON *root = cJSON_Parse(json_msg);
 
     if(root){
         tmp = cJSON_GetObjectItem(root, "title");
         if(tmp){
             title = tmp->valuestring;
-            ptr = message_create(front, "title", title);
-            if(!front) front = ptr;
+            message_field_add(msg, "title", title);
         }
         
         tmp = cJSON_GetObjectItem(root, "desc");
         if(tmp){
             content = tmp->valuestring;
-            ptr = message_create(front, "desc", content);
-            if(!front) front = ptr;
+            message_field_add(msg, "desc", content);
         }
     }
 
-    ptr->next = NULL;
-    
     cJSON_Delete(root);
-    return front;
+    return msg;
 }
 
