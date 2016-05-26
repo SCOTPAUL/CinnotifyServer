@@ -114,16 +114,19 @@ int main(int argc, char *argv[]){
 
         if(!fork()){ // We are the child process
             close(sockfd);
+            
             char *msg_body = get_message_body(new_fd);
-
             Message *message = match_message_body(msg_body);
-
+            
             char *title = NULL, *body = NULL;
             char *msg_header, *msg_content;
             while(message_field_remove(message, &msg_header, &msg_content)){ 
                 if(strcmp(msg_header, "title") == 0) title = msg_content;
                 else if(strcmp(msg_header, "desc") == 0) body = msg_content;
-                
+                else if(strcmp(msg_header, "b64Icon") == 0) {
+                    printf("%s\n", "Also received an icon");
+                    //TODO: Handle rendering of this icon
+                }
             }
 
             if(title != NULL || body != NULL){

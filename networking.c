@@ -14,13 +14,13 @@ static char * recv_all(int connected_socket , uint32_t size){
 
     bytes_recieved += recv(connected_socket, buff, bytes_to_recv, 0);
     while(bytes_recieved < bytes_to_recv){
-        bytes_recieved += recv(connected_socket, buff + bytes_recieved, bytes_to_recv - bytes_to_recv, 0);
+        bytes_recieved += recv(connected_socket, buff + bytes_recieved, bytes_to_recv - bytes_recieved, 0);
     }
 
     return buff;
 }
 
-static uint32_t char_array_to_uint(uint32_t num_bytes, char *buffer){
+static uint32_t char_array_to_uint(uint32_t num_bytes, unsigned char *buffer){
     uint32_t ret = 0;
 
     uint32_t i;
@@ -37,8 +37,7 @@ static uint32_t char_array_to_uint(uint32_t num_bytes, char *buffer){
  * This returns that value.
  */
 static uint32_t get_message_size(int connected_socket){
-    char *buff = recv_all(connected_socket, 4);
-
+    unsigned char *buff = (unsigned char *) recv_all(connected_socket, 4);
     uint32_t ret = char_array_to_uint(4, buff);
 
     free(buff);
@@ -47,7 +46,7 @@ static uint32_t get_message_size(int connected_socket){
 
 char * get_message_body(int connected_socket){
     uint32_t size = get_message_size(connected_socket);
-
+    
     char *buff = malloc(size + 1);
     char *msg_body = recv_all(connected_socket, size);
     memcpy(buff, msg_body, size + 1);

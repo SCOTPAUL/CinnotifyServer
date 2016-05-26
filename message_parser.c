@@ -84,6 +84,7 @@ Message *match_message_body(char *json_msg){
 
     cJSON *root = cJSON_Parse(json_msg);
 
+    // TODO: Refactor this mess
     if(root){
         tmp = cJSON_GetObjectItem(root, "title");
         if(tmp){
@@ -95,6 +96,11 @@ Message *match_message_body(char *json_msg){
         if(tmp){
             content = tmp->valuestring;
             message_field_add(msg, "desc", content);
+        }
+        tmp = cJSON_GetObjectItem(root, "b64Icon");
+        if(tmp){
+            content = tmp->valuestring;
+            message_field_add(msg, "b64Icon", content);
         }
     }
 
