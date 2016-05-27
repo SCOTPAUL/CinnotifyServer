@@ -49,7 +49,7 @@ char * get_message_body(int connected_socket){
     
     char *buff = malloc(size + 1);
     char *msg_body = recv_all(connected_socket, size);
-    memcpy(buff, msg_body, size + 1);
+    memcpy(buff, msg_body, size);
     free(msg_body);
     buff[size] = '\0';
     return buff;

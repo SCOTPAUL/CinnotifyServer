@@ -1,4 +1,4 @@
-CFLAGS=-c -Wall -Werror -Wextra
+CFLAGS=-g -c -Wall -Werror -Wextra
 GLIB_TARGETS =server.o notify.o cJSON.o
 TARGETS = $(GLIB_TARGETS) networking.o
 INSTALL_LOCATION ?=/usr/local/bin

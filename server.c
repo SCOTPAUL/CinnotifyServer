@@ -3,10 +3,17 @@
 #define BACKLOG 15
 #define BUFFER_SIZE 1000
 
+int terminate = 0;
+
 void print_usage_and_quit();
 
 void sigchld_handler(__attribute__((unused)) int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
+}
+
+void sigint_handler(__attribute__((unused)) int signum){
+    terminate = 1;
+    printf("Terminating\n");
 }
 
 int get_ip(char *buf, size_t buf_len){
@@ -75,6 +82,15 @@ int main(int argc, char *argv[]){
         }
     }
 
+    struct sigaction sigint_action;
+    sigint_action.sa_flags = 0;
+    sigint_action.sa_handler = &sigint_handler;
+    sigemptyset (&sigint_action.sa_mask);
+    
+    if (sigaction(SIGINT, &sigint_action, NULL) < 0) {
+        perror("SIGINT error");
+    }
+
     if(get_ip(ip_buf, BUFFER_SIZE) == 0){
         printf("This machine has address: %s\n", ip_buf);
     }
@@ -100,7 +116,7 @@ int main(int argc, char *argv[]){
     printf("%s\n", "server: waiting for connections");
 
     notify_init(argv[0]);
-    while(1){
+    while(!terminate){
         sin_size = sizeof(their_addr);
         new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
         if(new_fd == -1){
@@ -116,15 +132,16 @@ int main(int argc, char *argv[]){
             close(sockfd);
             
             char *msg_body = get_message_body(new_fd);
-
             create_and_send_notification(msg_body);
-
+            
+            free(msg_body);
             close(new_fd);
             exit(0);
         }
     }
     notify_uninit();
     close(new_fd);
+    close(sockfd);
     return 0;
 
 }

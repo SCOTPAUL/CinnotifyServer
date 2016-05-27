@@ -1,10 +1,7 @@
 #include "notify.h"
 #include "lib/cJSON/cJSON.h"
 
-void free_icon_data(guchar *pixels, gpointer data){
-    //unused
-    (void) data;
-    
+void free_icon_data(guchar *pixels, __attribute__((unused)) gpointer data){
     g_free(pixels);
 }
 
@@ -53,7 +50,13 @@ void create_and_send_notification(char *json_message){
 }
 
 void notify(const char *title, const char *description, GdkPixbuf *icon){
-	NotifyNotification *notification = notify_notification_new(title, description, "dialog-information");
+        char *default_icon = NULL;
+    
+        if(!icon){
+            default_icon = "dialog-information";
+        }
+
+        NotifyNotification *notification = notify_notification_new(title, description, default_icon);
 	notify_notification_set_urgency(notification, NOTIFY_URGENCY_LOW);
         
         if(icon){
@@ -61,5 +64,9 @@ void notify(const char *title, const char *description, GdkPixbuf *icon){
         }
         
         notify_notification_show(notification, NULL);
+        
+        if(icon){
+            g_clear_object(&icon);
+        }
 	g_object_unref(G_OBJECT(notification));
 }
