@@ -1,6 +1,6 @@
 CFLAGS=-c -Wall -Werror -Wextra
 GLIB_TARGETS =server.o notify.o cJSON.o
-TARGETS = $(GLIB_TARGETS) networking.o message_parser.o
+TARGETS = $(GLIB_TARGETS) networking.o
 INSTALL_LOCATION ?=/usr/local/bin
 
 
