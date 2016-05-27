@@ -4,7 +4,6 @@
 #define BUFFER_SIZE 1000
 
 void print_usage_and_quit();
-void create_and_send_notification(char *json_message);
 
 void sigchld_handler(__attribute__((unused)) int sig){
     while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -140,48 +139,4 @@ void print_usage_and_quit(){
     exit(1);
 }
 
-void create_and_send_notification(char *json_message){
-    cJSON *tmp, *icon;
-    cJSON *root = cJSON_Parse(json_message);
-    char *title = NULL, *content = NULL;
 
-    int hasIcon = 0;
-    //GdkPixbuf *img_buf;
-    unsigned int width, height, hasAlpha, rowLength;
-    char *b64data;
-
-
-    if(root){
-        tmp = cJSON_GetObjectItem(root, "title");
-        if(tmp){
-            title = tmp->valuestring;
-        }
-        
-        tmp = cJSON_GetObjectItem(root, "desc");
-        if(tmp){
-            content = tmp->valuestring;
-        }
-        icon = cJSON_GetObjectItem(root, "icon");
-        if(icon){
-
-            hasIcon = 1;
-
-            width = cJSON_GetObjectItem(icon, "width")->valueint;
-            height = cJSON_GetObjectItem(icon, "height")->valueint;
-            hasAlpha = cJSON_GetObjectItem(icon, "hasAlpha")->valueint;
-            rowLength = cJSON_GetObjectItem(icon, "rowLength")->valueint;
-
-            b64data = cJSON_GetObjectItem(icon, "b64data")->valuestring;
-        }
-        
-        if(hasIcon){
-            printf("Got icon with properties: data: %s\nwidth: %u, height: %u, hasAlpha: %u, rowLength: %u\n", b64data, width, height, hasAlpha, rowLength);
-        }
-    }
-
-    if(title || content){
-        notify(title, content);
-    }
-
-    cJSON_Delete(root);
-}

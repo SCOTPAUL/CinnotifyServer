@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <libnotify/notify.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include "lib/cJSON/cJSON.h"
 #include <regex.h>
 #include <ctype.h>
 #include <ifaddrs.h>
