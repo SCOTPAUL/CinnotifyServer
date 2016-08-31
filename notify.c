@@ -1,7 +1,7 @@
 #include "notify.h"
 #include "lib/cJSON/cJSON.h"
 
-void free_icon_data(guchar *pixels, __attribute__((unused)) gpointer data){
+static void free_icon_data(guchar *pixels, __attribute__((unused)) gpointer data){
     g_free(pixels);
 }
 
@@ -26,6 +26,7 @@ void create_and_send_notification(char *json_message){
         if(tmp){
             content = tmp->valuestring;
         }
+      
         icon = cJSON_GetObjectItem(root, "icon");
         if(icon){
             width = cJSON_GetObjectItem(icon, "width")->valueint;
@@ -36,8 +37,6 @@ void create_and_send_notification(char *json_message){
             b64data = cJSON_GetObjectItem(icon, "b64data")->valuestring;
             data = g_base64_decode(b64data, &size);
             
-            printf("Image has size: %lu\n", (unsigned long) size);
-
             img_buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, hasAlpha, 8,  width, height, rowLength, &free_icon_data, NULL);
         }
     }
@@ -70,3 +69,4 @@ void notify(const char *title, const char *description, GdkPixbuf *icon){
         }
 	g_object_unref(G_OBJECT(notification));
 }
+
