@@ -1,7 +1,4 @@
-#include <openssl/evp.h>
-#include <openssl/conf.h>
-#include <openssl/err.h>
-#include <string.h>
+#include "crypto.h"
 
 #define NUM_ITERS 65536
 #define KEY_SIZE_BYTES 16
@@ -22,7 +19,7 @@ void crypto_deinit(){
 
 int generateKey(const char *pass, const char *salt, char *out){
     return PKCS5_PBKDF2_HMAC_SHA1(pass, -1,
-                (unsigned char *) salt, strlen(salt) + 1, NUM_ITERS, 
+                (unsigned char *) salt, strlen(SALT) + 1, NUM_ITERS, 
                 KEY_SIZE_BYTES, (unsigned char *) out);
 }
 
@@ -30,7 +27,7 @@ char *getEncryptedBody(char *message){
     return message + IV_SIZE_BYTES;
 }
 
-int decrypt(char *message, char *password, char *plaintext){
+int decrypt(char *message, uint32_t message_size, char *password, char *plaintext){
   EVP_CIPHER_CTX *ctx;
   int len;
   int plaintext_len;
@@ -60,7 +57,7 @@ int decrypt(char *message, char *password, char *plaintext){
   /* Provide the message to be decrypted, and obtain the plaintext output.
    * EVP_DecryptUpdate can be called multiple times if necessary
    */
-  if(1 != EVP_DecryptUpdate(ctx, (unsigned char *) plaintext, &len, (unsigned char *) ciphertext, strlen(ciphertext))){
+  if(1 != EVP_DecryptUpdate(ctx, (unsigned char *) plaintext, &len, (unsigned char *) ciphertext, message_size - IV_SIZE_BYTES)){
     return -1;
   }
 

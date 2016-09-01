@@ -44,9 +44,12 @@ static uint32_t get_message_size(int connected_socket){
     return ret;
 }
 
-char * get_message_body(int connected_socket){
+char * get_message_body(int connected_socket, uint32_t *message_size){
     uint32_t size = get_message_size(connected_socket);
-    
+    if(message_size){
+        *message_size = size;
+    }
+
     char *buff = malloc(size + 1);
     char *msg_body = recv_all(connected_socket, size);
     memcpy(buff, msg_body, size);

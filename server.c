@@ -1,4 +1,5 @@
 #include "main.h"
+#include "crypto.h"
 
 #define BACKLOG 15
 #define BUFFER_SIZE 1000
@@ -46,6 +47,9 @@ int main(int argc, char *argv[]){
     char s[INET_ADDRSTRLEN];
     char ip_buf[BUFFER_SIZE];
     char *port = "6525";
+    
+    int encrypted = 0;
+    char *password;
 
     int option, option_index = 0;
 
@@ -54,10 +58,11 @@ int main(int argc, char *argv[]){
         {"port",    required_argument, 0, 'p'},
         {"help",    no_argument,       0, 'h'},
         {"version", no_argument,       0, 'v'},
+        {"encrypt", required_argument, 0, 'e'},
         {0,         0,                 0,  0 } // End of array
     };
 
-    while((option = getopt_long(argc, argv,"vshp:", long_options, &option_index)) != -1){
+    while((option = getopt_long(argc, argv,"vshp:e:", long_options, &option_index)) != -1){
         switch(option){
             case 's':
                 freopen("/dev/null", "w", stdout);
@@ -72,6 +77,11 @@ int main(int argc, char *argv[]){
                     if(!isdigit(*ptr)) print_usage_and_quit();
                     ++ptr;
                 }
+                break;
+            case 'e':
+                encrypted = 1;
+                // TODO: free this string!
+                password = strdup(optarg);
                 break;
             case 'v':
                 printf("%s - %s (Compiled %s %s)\n", NAME, VERSION, __DATE__, __TIME__);
@@ -130,9 +140,27 @@ int main(int argc, char *argv[]){
 
         if(!fork()){ // We are the child process
             close(sockfd);
-            
-            char *msg_body = get_message_body(new_fd);
-            create_and_send_notification(msg_body);
+          
+            uint32_t message_size;
+            char *msg_body = get_message_body(new_fd, &message_size);
+
+            if(encrypted){
+                crypto_init();
+                
+                char *message = malloc(message_size + 1);
+                message[message_size] = '\0';
+
+                decrypt(msg_body, message_size, password, message);
+                
+                create_and_send_notification(message);
+                free(message);
+
+                crypto_deinit();
+            }
+            else {
+                create_and_send_notification(msg_body);
+            }
+
             
             free(msg_body);
             close(new_fd);
@@ -148,10 +176,11 @@ int main(int argc, char *argv[]){
 
 void print_usage_and_quit(){
     printf("Usage: %s [OPTION...]\n\n"
-            "-h --help             Displays this information\n"
-            "-s --silent           Redirects outputs to /dev/null\n"
-            "-p --port <portnum>   Sets the binding port to <portnum>\n"
-            "-v --version          Print current version number\n", 
+            "-h --help                Displays this information\n"
+            "-s --silent              Redirects outputs to /dev/null\n"
+            "-e --encrypt <password>  Enables the decryption of messages\n"
+            "-p --port <portnum>      Sets the binding port to <portnum>\n"
+            "-v --version             Print current version number\n", 
             NAME);
     exit(1);
 }
