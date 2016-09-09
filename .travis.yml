@@ -2,7 +2,7 @@ language: c
 
 install: 
     - sudo apt-get -qq update
-    - sudo apt-get install libgtk2.0-dev libnotify-dev libgtk2.0-dev
+    - sudo apt-get install libgtk2.0-dev libnotify-dev libgtk2.0-dev libavahi-client-dev libavahi-client3
     
 compiler:
     - clang
