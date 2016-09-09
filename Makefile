@@ -1,6 +1,6 @@
 CFLAGS=-g -c -Wall -Werror -Wextra
 GLIB_TARGETS =server.o notify.o cJSON.o
-TARGETS = $(GLIB_TARGETS) networking.o crypto.o
+TARGETS = $(GLIB_TARGETS) networking.o crypto.o service.o
 INSTALL_LOCATION ?=/usr/local/bin
 
 
@@ -13,7 +13,7 @@ uninstall:
 	rm $(INSTALL_LOCATION)/cinnotify-server
 
 cinnotify-server: $(TARGETS)
-	$(CC) $^  `pkg-config --cflags --libs gtk+-2.0 glib-2.0 libnotify openssl` -o $@ -lm
+	$(CC) $^  `pkg-config --cflags --libs gtk+-2.0 glib-2.0 libnotify openssl` -o $@ -lm  -L/usr/lib/x86_64-linux-gnu/ -lavahi-common -lavahi-client
 
 server.o: server.c
 cJSON.o: lib/cJSON/cJSON.c

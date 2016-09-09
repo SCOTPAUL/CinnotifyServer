@@ -16,7 +16,7 @@ git clone --recursive https://github.com/SCOTPAUL/CinnotifyServer.git
 ### Install dependencies
 
 ```bash
-sudo apt-get install libgtk2.0-dev libnotify-dev libgtk2.0-dev openssl
+sudo apt-get install libgtk2.0-dev libnotify-dev libgtk2.0-dev openssl libavahi-client-dev libavahi-client3
 ```
 
 If you did not include the `--recursive` flag when cloning, you also have to do the following.

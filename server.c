@@ -47,7 +47,8 @@ int main(int argc, char *argv[]){
     char s[INET_ADDRSTRLEN];
     char ip_buf[BUFFER_SIZE];
     char *port = "6525";
-    
+    long port_num = 6525;
+
     int encrypted = 0;
     char *password;
 
@@ -72,6 +73,8 @@ int main(int argc, char *argv[]){
                 // TODO: free this string!
                 port = strdup(optarg);
                 
+                port_num = strtol(port, NULL, 10);
+
                 char *ptr = port;
                 while(*ptr){
                     if(!isdigit(*ptr)) print_usage_and_quit();
@@ -91,6 +94,7 @@ int main(int argc, char *argv[]){
             default: print_usage_and_quit();
         }
     }
+
 
     struct sigaction sigint_action;
     sigint_action.sa_flags = 0;
@@ -123,6 +127,8 @@ int main(int argc, char *argv[]){
         perror("sigaction");
         exit(1);
     }
+    
+    start_service_broadcast((uint16_t) port_num);
     printf("%s\n", "server: waiting for connections");
 
     notify_init(argv[0]);
@@ -167,6 +173,8 @@ int main(int argc, char *argv[]){
             exit(0);
         }
     }
+    
+    stop_service_broadcast();
     notify_uninit();
     close(new_fd);
     close(sockfd);

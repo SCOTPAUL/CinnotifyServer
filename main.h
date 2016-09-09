@@ -18,6 +18,7 @@
 #include <netdb.h>
 #include "networking.h"
 #include "notify.h"
+#include "service.h"
 
 #define NAME    "cinnotify-server"
 #define VERSION "v0.2.2-alpha"
